@@ -1,100 +1,161 @@
-{% extends "base.html" %}
-{% block back %}
-<a href="?" class="icon icon-home pull-left"></a>
-{% endblock %}
-{% block content %}
-<link rel="stylesheet" href="https://cdn.fluidplayer.com/v2/current/fluidplayer.min.css" type="text/css"/>
-<script src="https://cdn.fluidplayer.com/v2/current/fluidplayer.js"></script>
-<script src="https://cdn.bootcss.com/lazyloadjs/3.2.2/lazyload.min.js"></script>
-    <div class="list-block">
-        <ul>
-            <li>
-                <div class="item-content">
-                    <div class="item-inner">
-                        <div class="item-title label">排序</div>
-                        <div class="item-input">
-                            <select name="sort">
-                                <option value="date">更新日期</option>
-                                <option value="ranking">人气排序</option>
-                                <option value="saleranking_asc">销量排序</option>
-                                <option value="review_rank">评价排序</option>
-                            </select>
-                        </div>
-                    </div>
-                </div>
-            </li>
-        </ul>
-    </div>
 
-<div class="content-block">
-    <div class="row">
-        <div class="col-50"><a href="?" class="button button-big button-fill button-light">清空筛选</a></div>
-        <div class="col-50"><a href="search.php" class="button button-big button-fill button-success">高级筛选</a></div>
-    </div>
-</div>
-<div class="content-block-title">第{{page}}页</div>
-{% for d in data%}  
-    <div class="card demo-card-header-pic">
-        <div valign="bottom" class="card-header color-white no-border no-padding">
-            <img class='card-cover' src="data:image/gif;base64,R0lGODdhAQABAPAAAMPDwwAAACwAAAAAAQABAAACAkQBADs="
-             data-src="{{d.img}}" onload="lzld(this)" />
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+    <meta name="description" content="">
+    <title>{{title}}</title>
+
+    <!-- Bootstrap core CSS -->
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.4.1/css/bootstrap.min.css" integrity="sha384-Vkoo8x4CGsO3+Hhxv8T/Q5PaXtkKtu6ug5TOeNV6gBiFeWPGFN9MuhOf23Q9Ifjh" crossorigin="anonymous">
+    <style>
+        .card-cover{
+            width:100%
+        }
+        .jumbotron{
+          padding:20px
+        }
+    </style>
+  </head>
+  <body>
+    <script src="https://cdn.bootcss.com/lazyloadjs/3.2.2/lazyload.min.js"></script>
+    <header>
+      <div class="navbar navbar-dark bg-dark shadow-sm">
+        <div class="container d-flex justify-content-between">
+          <a href="#" class="navbar-brand d-flex align-items-center">
+            <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" aria-hidden="true" class="mr-2" viewBox="0 0 24 24" focusable="false"><path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"/><circle cx="12" cy="13" r="4"/></svg>
+            <strong>DMM Video Preview</strong>  
+          </a>
         </div>
-        <div class="card-content">
-            <div class="card-content-inner">
-                <p>{{d.title}}</p>
+      </div>
+    </header>
+
+    <main role="main">
+
+      <section class="jumbotron text-center">
+        <div class="container">
+            <div class="form-row">
+              <div class="form-group col-md-6">
+                <div class="input-group">
+                  <div class="input-group-prepend">
+                    <span class="input-group-text" id="inputGroup-sizing-default">关键字</span>
+                  </div>
+                  <input type="text" class="form-control" aria-label="Sizing example input" aria-describedby="inputGroup-sizing-default" id="searchstr">
+                </div>
+              </div>
+              <div class="form-group col-md-5">
+                <div class="input-group">
+                  <div class="input-group-prepend">
+                    <label class="input-group-text" for="inputGroupSelect01">类别</label>
+                  </div>
+                  <select class="custom-select" id="n1">
+                    <option value="">未选择</option>
+                    {% for o in options%}
+                        <option value="{{o.key}}">{{o.value}}</option>
+                    {% endfor %}
+                  </select>
+                  <select class="custom-select" id="n2">
+                    <option value="">未选择</option>
+                    {% for o in options%}
+                        <option value="{{o.key}}">{{o.value}}</option>
+                    {% endfor %}
+                  </select>
+                </div>
+              </div>
+              <div class="form-group col-md-1">
+                <button class="btn btn-outline-secondary" type="button" onclick="dosearch()">搜索</button>
+              </div>
+            </div>
+            <a href="javascript:prevpage()" class="btn btn-primary my-2" role="button">上一页</a>
+            <a href="#" class="btn btn-outline-primary my-2" role="button">第{{page}}页</a>
+            <a href="javascript:nextpage()" class="btn btn-primary my-2" role="button">下一页</a>
+            <div class="dropdown" style="display:inline-block">
+              <a class="btn btn-primary dropdown-toggle" href="#" role="button" id="dropdownMenuLink" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false" style="width: 100px">
+                排序
+              </a>
+              <div class="dropdown-menu" aria-labelledby="dropdownMenuLink">
+                <a class="dropdown-item" href="?sort=date">更新日期</a>
+                <a class="dropdown-item" href="?sort=ranking">人气排序</a>
+                <a class="dropdown-item" href="?sort=saleranking_asc">销量排序</a>
+                <a class="dropdown-item" href="?sort=review_rank">评价排序</a>
+              </div>
             </div>
         </div>
-        <div class="card-footer">
-            <a></a>
-            <a data-link="{{d.video}}" class="link viewVideo">观看视频</a>
+      </section>
+
+      <div class="album py-5 bg-light">
+        <div class="container">
+
+          <div class="row">
+            {% for d in data%}  
+            <div class="col-md-4">
+                <div class="card mb-4 shadow-sm">
+                <img class='card-cover' src="data:image/gif;base64,R0lGODdhAQABAPAAAMPDwwAAACwAAAAAAQABAAACAkQBADs="
+                    data-src="{{d.img}}" onload="lzld(this)" />
+                <div class="card-body">
+                    <p class="card-text">{{d.title}}</p>
+                    <div class="d-flex justify-content-between align-items-center">
+                    <div class="btn-group">
+                        <a type="button" class="btn btn-sm btn-outline-secondary" href="{{d.video}}">View</a>
+                        <button type="button" class="btn btn-sm btn-outline-secondary">Edit</button>
+                    </div>
+                    <small class="text-muted">{{d.id}}</small>
+                    </div>
+                </div>
+                </div>
+            </div>
+            {% endfor %}
+          </div>
         </div>
-    </div>
-{% endfor %}
-    <div class="content-block">
-        <p class="buttons-row"><a onclick="javascript: window.location = '?' + changeUrl('page','{{page > 1 ? page -1 : '#'}}')" class="button button-big button-round">上一页</a><a onclick="javascript: window.location = '?'+ changeUrl('page','{{page > 0 ? page +1 : 2}}');" class="button button-big button-round">下一页</a></p>
-    </div>
-{% endblock %}
+      </div>
 
-{% block footer %}
+    </main>
+    <textarea>
+      {{pdata}}
+    </textarea>
+    <footer class="text-muted">
+      <div class="container">
+        <p class="float-right">
+          <a href="#">Back to top</a>
+        </p>
+      </div>
+    </footer>
+    <script src="https://code.jquery.com/jquery-3.4.1.slim.min.js" integrity="sha384-J6qa4849blE2+poT4WnyKhv5vZF5SrPo0iEjwBvKU7imGFAV0wwj1yYfoRSJoZ+n" crossorigin="anonymous"></script>
+    <script src="https://cdn.jsdelivr.net/npm/popper.js@1.16.0/dist/umd/popper.min.js" integrity="sha384-Q6E9RHvbIyZFJoft+2mJbHaEWldlvI9IOYy5n3zV9zzTtmI3UksdQRVvoxMfooAo" crossorigin="anonymous"></script>
+    <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.4.1/js/bootstrap.min.js" integrity="sha384-wfSDF2E50Y2D1uUdj0O3uMBJnjuUD4Ih7YwaYd1iqfktj0Uod8GCExl3Og8ifwB6" crossorigin="anonymous"></script>
     <script>
-        $(".viewVideo").click(function(){
-            var rand = Math.floor(Math.random()*999);
-            var videoId = 'my-video'+rand;
-            if($("[id^=my-video]").length >0){
-                //$("[id^=my-video]").remove();
-                
-                // var myFluidPlayer = fluidPlayer($("[id^=my-video]").attr("id"));
-                // myFluidPlayer.pause();
-                $("[id^=fluid_video_wrapper_my-video]").remove();
-            }
-            $(this).parent().after('<video id="'+videoId+'" style="width: 100%"><source src="'+$(this).data("link").replace('_sm_','_dmb_')+'" title="高清" type="video/mp4" /><source src="'+$(this).data("link")+'" title="标清" type="video/mp4" /></video>')
-            var myFluidPlayer = fluidPlayer(videoId,
-            {
-                layoutControls: {
-                    fillToContainer: true,
-                    allowDownload:true,
-		            allowTheatre: false,
-                    controlBar: {
-                        autoHide:           true,
-                        autoHideTimeout:    2,
-                        animated:           true
-                    }
-                }
-            });
-            //var myFluidPlayer = fluidPlayer(videoId);
-            myFluidPlayer.play();
-
-        });
-
-        $("[name=sort]").change(function(){
-            //console.log($(this).val());
-            window.location = "?"+changeUrl("sort",$(this).val());
-        });
-
-        function init(){
-            //设置排序默认值
-            $("[name=sort]").val("{{sort}}");
-        }
-        init();
+      $(document).ready(function(){
+        $('.dropdown-toggle').dropdown()
+        if ((ret = location.search.match(/[\?&]searchstr=([^&]*)/)) != null)
+          $("#searchstr").val(decodeURIComponent(ret[1]));
+        if ((ret = location.search.match(/[\?&]n1=([^&]*)/)) != null)
+          $("#n1").val(decodeURIComponent(ret[1]));
+        if ((ret = location.search.match(/[\?&]n2=([^&]*)/)) != null)
+          $("#n2").val(decodeURIComponent(ret[1]));
+      })
+      function dosearch(){
+        location.search = "?searchstr=" + encodeURIComponent($("#searchstr").val()) +
+                          "&n1=" + encodeURIComponent($("#n1").val()) +
+                          "&n2=" + encodeURIComponent($("#n2").val());
+      }
+      function nextpage(){
+        var page = {{page}};
+        page ++;
+        if (location.search.search(/([\?&]page=)\d/) == -1)
+          location.search += "&page=" + page;
+        else
+          location.search = location.search.replace(/([\?&]page=)\d/,"$1" + page);
+      }
+      function prevpage(){
+        var page = {{page}};
+        if (page <= 1) return;
+        page --;
+        if (location.search.search(/([\?&]page=)\d/) == -1)
+          location.search += "&page=" + page;
+        else
+          location.search = location.search.replace(/([\?&]page=)\d/,"$1" + page);
+      }
     </script>
-{% endblock %}
+  </body>
+</html>
